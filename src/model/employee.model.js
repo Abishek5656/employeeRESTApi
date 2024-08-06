@@ -1,6 +1,24 @@
 import mongoose, { Schema } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
+
+
+
+const emergencyContactSchema = new mongoose.Schema({ 
+  name: { 
+    type: String,
+    // required: true
+   },
+  relationship: { 
+    type: String, 
+    //required: true
+   },
+  phoneNumber: {
+     type: String,
+      // required: true
+     },
+})
+
 const employeeSchema = new Schema(
   {
     emp_id: {
@@ -10,32 +28,32 @@ const employeeSchema = new Schema(
       },
       firstName: {
         type: String,
-        required: true
+       required: true
       },
       lastName: {
         type: String,
-        required: true
+       required: true
       },
       email: {
         type: String,
-        required: true,
+       required: true,
         unique: true
       },
       position: {
         type: String,
-        required: true
+      required: true
       },
       department: {
         type: String,
-        required: true
+       required: true
       },
       dateOfJoining: {
         type: String,
-        required: true
+       required: true
       },
       phoneNumber: {
         type: String,
-        required: true
+       required: true
       },
       address: {
         street: {
@@ -72,21 +90,10 @@ const employeeSchema = new Schema(
       },
       skills: {
         type: [String],
-        required: true
+       required: true
       },
-      emergencyContact: {
-        name: {
-          type: String,
-          required: true
-        },
-        relationship: {
-          type: String,
-          required: true
-        },
-        phoneNumber: {
-          type: String,
-          required: true
-        }
+      emergencyContact: { 
+        type: [emergencyContactSchema]
       },
   },
   {
@@ -104,4 +111,6 @@ const employeeSchema = new Schema(
 );
 
 
+
 export const Employee = mongoose.model("Employee", employeeSchema);
+

@@ -4,15 +4,33 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Employee } from "../model/employee.model.js";
 
 export const getAllEmployee = asyncHandler(async (req, res) => {
-  const allEmployee = await Employee.find({});
+  const { page, limit } = req.body;
+
+  // Convert page and limit to numbers and set defaults if necessary
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 10;
+
+  const skip = (pageNum - 1) * limitNum;
+
+  const allEmployee = await Employee.find({})
+    .skip(skip)
+    .limit(limitNum);
 
   if (allEmployee.length === 0) {
-    return res.status(400).json(new ApiError(400, "No employee found"));
+    return res.status(400).json(new ApiError(400, "No employees found"));
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, allEmployee, "Retrive all Employees"));
+  const totalEmployees = await Employee.countDocuments({});
+  const totalPages = Math.ceil(totalEmployees / limitNum);
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      employees: allEmployee,
+      totalEmployees,
+      totalPages,
+      currentPage: pageNum,
+    }, "Retrieved all employees with pagination")
+  );
 });
 
 export const getEmployee = asyncHandler(async (req, res) => {
@@ -45,17 +63,10 @@ export const createEmployee = asyncHandler(async (req, res) => {
     skills,
     employmentType,
     salary,
-    emergencyContactNumber,
-    emergencyContactRelation,
-    emergencyContactName,
-    country,
-    postalCode,
-    state,
-    city,
-    street,
+    emergencyContact,
+    address: { street, city, state, postalCode, country },
   } = req.body;
 
-  console.log("createEmployee");
 
   if (
     [
@@ -72,10 +83,7 @@ export const createEmployee = asyncHandler(async (req, res) => {
       state,
       postalCode,
       country,
-      emergencyContactName,
-      emergencyContactRelation,
-      emergencyContactNumber,
-    ].some((field) => field?.trim() === "")
+    ].some((field) => !field || field.trim() === "")
   ) {
     return res
       .status(400)
@@ -108,14 +116,8 @@ export const createEmployee = asyncHandler(async (req, res) => {
     },
     salary,
     skills,
-    emergencyContact: {
-      name: emergencyContactName,
-      relationship: emergencyContactRelation,
-      phoneNumber: emergencyContactNumber,
-    },
+    emergencyContact,
   });
-
-  console.log("employee", employee);
 
   if (!employee) {
     throw res.status(400).json(new ApiError(400, "Employee not created"));
@@ -127,7 +129,12 @@ export const createEmployee = asyncHandler(async (req, res) => {
 });
 
 export const updateEmployee = asyncHandler(async (req, res) => {
+
+
   const employeeId = req.params.employeeId;
+
+  console.log(employeeId);
+
 
   if (!employeeId) {
     return res.state(400).json(new ApiError(400, "Employee Id required"));
@@ -144,15 +151,10 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     skills,
     employmentType,
     salary,
-    emergencyContactNumber,
-    emergencyContactRelation,
-    emergencyContactName,
-    country,
-    postalCode,
-    state,
-    city,
-    street,
-    managerId,
+    emergencyContact,
+    address: { 
+      street, city, state, postalCode, country },
+    managerId
   } = req.body;
 
   const updateEmployee = await Employee.findByIdAndUpdate(
@@ -169,14 +171,14 @@ export const updateEmployee = asyncHandler(async (req, res) => {
         skills,
         employmentType,
         salary,
-        emergencyContactNumber,
-        emergencyContactRelation,
-        emergencyContactName,
-        country,
-        postalCode,
-        state,
-        city,
-        street,
+        address: {
+          street,
+          city,
+          state,
+          postalCode,
+          country,
+        },
+        emergencyContact,
         managerId,
       },
     },
