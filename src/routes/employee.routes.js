@@ -10,7 +10,7 @@ router.route("/update/:employeeId").post(updateEmployee);
 
 router.route("/delete/:employeeId").delete(deleteEmployee);
 
-router.route("/all").get(getAllEmployee);
+router.route("/all/:page/:limit").get(getAllEmployee);
 
 router.route("/:employeeId").get(getEmployee);
 

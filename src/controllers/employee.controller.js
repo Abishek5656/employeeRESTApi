@@ -4,7 +4,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Employee } from "../model/employee.model.js";
 
 export const getAllEmployee = asyncHandler(async (req, res) => {
-  const { page, limit } = req.body;
+
+
+  const { page, limit } = req.params;
+
+  console.log("Page",page);
+  console.log("limit-.", limit)
 
   // Convert page and limit to numbers and set defaults if necessary
   const pageNum = parseInt(page, 10) || 1;
