@@ -157,49 +157,57 @@ export const updateEmployee = asyncHandler(async (req, res) => {
     employmentType,
     salary,
     emergencyContact,
-    address: { 
-      street, city, state, postalCode, country },
-    managerId
+    managerId,
+    address 
   } = req.body;
 
-  const updateEmployee = await Employee.findByIdAndUpdate(
+  console.log(address)
+
+
+  const updateFields = {
+    firstName,
+    lastName,
+    email,
+    position,
+    department,
+    dateOfJoining,
+    phoneNumber,
+    skills,
+    employmentType,
+    salary,
+    emergencyContact,
+    managerId,
+  };
+
+  // Check if address is provided and add to updateFields
+ 
+  if (address) {
+    updateFields.address = {
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+    };
+  }
+
+  const updatedEmployee = await Employee.findByIdAndUpdate(
     employeeId,
-    {
-      $set: {
-        firstName,
-        lastName,
-        email,
-        position,
-        department,
-        dateOfJoining,
-        phoneNumber,
-        skills,
-        employmentType,
-        salary,
-        address: {
-          street,
-          city,
-          state,
-          postalCode,
-          country,
-        },
-        emergencyContact,
-        managerId,
-      },
-    },
-    {
-      new: true,
-    }
+    { $set: updateFields },
+    { new: true }
   );
 
-  if (!updateEmployee) {
-    return res.state(400).json(new ApiError(400, "Update Employee Failed"));
+
+  if (!updatedEmployee) {
+    return res.status(400).json(new ApiError(400, "Update Employee Failed"));
   }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, updateEmployee, "updated employee details"));
-});
+    .json(new ApiResponse(200, updatedEmployee, "updated employee details"));
+}
+
+);
 
 export const deleteEmployee = asyncHandler(async (req, res) => {
   const employeeId = req.params.employeeId;
